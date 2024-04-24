@@ -20,19 +20,8 @@ class MovieSerializer(serializers.ModelSerializer):
         model = Movie
         fields = '__all__'
 
-    # def validate_rating(self, value):
-    #     if value < 1 or value > 10:
-    #         raise serializers.ValidationError("rating 1 va 10 orasida bo'lishi kerak")
-    #     return value
-
     def validate_phone(self, value):
 
-        # # 1-usul:
-        # pattern = r'^\+998\d{9}$'
-        # if not re.match(pattern, value):
-        #     raise serializers.ValidationError("Telefon raqam noto'g'ri")
-        # return value
-        # 2-usul
         try:
             parsed_phone = phonenumbers.parse(value, "UZ")
             if not phonenumbers.is_valid_number(parsed_phone):
