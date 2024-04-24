@@ -8,8 +8,20 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly, IsAdminUser
 from .serializers import TodoSerializer
 from rest_framework.viewsets import ViewSet
-
 from .models import Todo
+
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+from .models import Todo, Movie
+from .serializers import TodoSerializer, MovieSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .permissions import IsOwner
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+from rest_framework.generics import GenericAPIView, ListAPIView, CreateAPIView
+from rest_framework import mixins
 
 
 class TodoListApiView(APIView):
@@ -104,3 +116,68 @@ class TodoViewSet(ViewSet):
         item = get_object_or_404(self.queryset, pk=pk)
         item.delete()
         return Response({"message": "Todo succesfully deleted!"})
+
+
+
+
+class RetrieveDeleteItem(GenericAPIView):
+    serializer_class = TodoSerializer
+    queryset = Todo.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CreateListItems(mixins.ListModelMixin, mixins.CreateModelMixin, GenericAPIView):
+    serializer_class = TodoSerializer
+    queryset = Todo.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class RetrieveUpdateDelete(mixins.RetrieveModelMixin,
+                           mixins.UpdateModelMixin,
+                           mixins.DestroyModelMixin,
+                           GenericAPIView):
+    serializer_class = TodoSerializer
+    queryset = Todo.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
+class MultipleFieldLookupMixin:
+    def retrieve(self, request, *args, **kwargs):
+        instance = Todo.objects.filter(user=request.user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class ListAPIItem(ListAPIView):
+    serializer_class = TodoSerializer
+    queryset = Todo.objects.all()
+
+
+class MovieCreateItem(CreateAPIView):
+    serializer_class = MovieSerializer
+    queryset = Movie.objects.all()
