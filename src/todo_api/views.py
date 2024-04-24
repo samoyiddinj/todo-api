@@ -106,8 +106,6 @@ class TodoViewSet(ViewSet):
         return Response({"message": "Todo succesfully deleted!"})
 
 
-
-
 class RetrieveDeleteItem(GenericAPIView):
     serializer_class = TodoSerializer
     queryset = Todo.objects.all()

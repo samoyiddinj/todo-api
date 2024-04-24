@@ -35,3 +35,15 @@ class MovieSerializer(serializers.ModelSerializer):
         if attrs['uzb_gross'] > attrs['world_gross']:
             raise serializers.ValidationError("Uzb gross kichkina bo'lishi kerak")
         return attrs
+
+
+class PhoneSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=20)
+
+    def validate_phone_number(self, value):
+        pattern = re.compile(r'^\+998\d{9}$')
+
+        if not pattern.match(value):
+            raise serializers.ValidationError("Invalid phone number format")
+
+        return value
